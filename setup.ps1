@@ -90,6 +90,20 @@ if (-not (Test-Path $jarFile)) {
     }
 }
 
-# Run jar
+# Split JVM_FLAGS and JAR_FLAGS into arrays if not empty
+$jvmFlagsArray = @()
+if ($JVM_FLAGS) {
+    $jvmFlagsArray = $JVM_FLAGS -split '\s+'
+}
+
+$jarFlagsArray = @()
+if ($JAR_FLAGS) {
+    $jarFlagsArray = $JAR_FLAGS -split '\s+'
+}
+
+# Build full argument list
+$javaArgs = @("-Xmx$MEMORY", "-Xms$MEMORY") + $jvmFlagsArray + "-jar", $jarFile + $jarFlagsArray
+
+# Run Java
 Write-Output "Running $PROJECT with $MEMORY RAM..."
-java "-Xmx$MEMORY" "-Xms$MEMORY" $JVM_FLAGS -jar $jarFile $JAR_FLAGS
+& java @javaArgs
