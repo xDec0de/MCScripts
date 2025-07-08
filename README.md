@@ -54,7 +54,7 @@ I personally develop servers locally on Windows, so this will be helpful for tho
 Fortunately, Windows 10 and 11 come with **curl** pre-installed, and **jq** is not required.
 You still obviously need **Java**.
 
-Just create an script with the following content to re-use it, you can name it `run.bat`:
+Just create a script with the following content to re-use it, you can name it `run.bat`:
 
 ```batch
 @echo off
