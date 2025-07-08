@@ -1,0 +1,5 @@
+# Generated config
+mcsconfig.env
+
+# Downloaded jar files
+*.jar
