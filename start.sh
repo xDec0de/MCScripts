@@ -92,9 +92,17 @@ echo "===================================================================="
 echo "Downloading and executing setup.sh..."
 echo "===================================================================="
 
+if ! command -v java --version >/dev/null 2>&1; then
+  echo ""
+  echo "java is not installed. Please install java and try again."
+  echo ""
+  exit 1
+fi
+
 if ! command -v jq >/dev/null 2>&1; then
   echo ""
   echo "jq is not installed. Please install jq and try again."
+  echo ""
   exit 1
 fi
 
@@ -102,10 +110,12 @@ if command -v curl >/dev/null 2>&1; then
   curl -fsSL "$SETUP_URL" | bash || {
     echo ""
     echo "Failed to download or execute setup.sh from $SETUP_URL"
+	echo ""
     exit 1
   }
 else
   echo ""
   echo "curl is not installed. Please install curl and try again."
+  echo ""
   exit 1
 fi
