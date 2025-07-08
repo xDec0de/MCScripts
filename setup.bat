@@ -29,40 +29,40 @@ echo ===========================================
 
 where bash >nul 2>&1
 if %ERRORLEVEL% equ 0 (
-    echo bash is available. Trying to run start.sh...
-    if exist start.sh (
-        bash start.sh
+    echo bash is available. Trying to run setup.sh...
+    if exist setup.sh (
+        bash setup.sh
         set "bashExitCode=!ERRORLEVEL!"
         echo Bash script exited with code !bashExitCode!
         if !bashExitCode! equ 0 (
-            echo start.sh ran successfully.
+            echo setup.sh ran successfully.
             goto end
         ) else (
-            echo start.sh failed. Will try start.ps1...
+            echo setup.sh failed. Will try setup.ps1...
         )
     ) else (
-        echo start.sh not found. Skipping to start.ps1...
+        echo setup.sh not found. Skipping to setup.ps1...
     )
 ) else (
-    echo bash not found. Skipping to start.ps1...
+    echo bash not found. Skipping to setup.ps1...
 )
 
 echo ===========================================
 echo Attempting to run powershell script...
 echo ===========================================
 
-if exist start.ps1 (
-    powershell -ExecutionPolicy Bypass -File start.ps1
+if exist setup.ps1 (
+    powershell -ExecutionPolicy Bypass -File setup.ps1
     set "psExitCode=!ERRORLEVEL!"
     echo PowerShell script exited with code !psExitCode!
     if !psExitCode! equ 0 (
-        echo start.ps1 ran successfully.
+        echo setup.ps1 ran successfully.
         goto end
     ) else (
-        echo start.ps1 failed. Will attempt to run jar directly...
+        echo setup.ps1 failed. Will attempt to run jar directly...
     )
 ) else (
-    echo start.ps1 not found. Will attempt to run jar directly...
+    echo setup.ps1 not found. Will attempt to run jar directly...
 )
 
 echo ===========================================

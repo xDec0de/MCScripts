@@ -11,7 +11,7 @@ if [ -f "$CONFIG_FILE" ]; then
   echo "===================================================================="
 else
   echo "===================================================================="
-  echo " Minecraft Server Config Generator"
+  echo " MCScripts Config Generator"
   echo "===================================================================="
 
   # Function to validate PROJECT
