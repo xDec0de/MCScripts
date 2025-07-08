@@ -45,6 +45,22 @@ if [ ! -f "${PROJECT}.jar" ]; then
   fi
 fi
 
+# EULA check (only for paper and folia)
+if [ "$NAME" = "paper" ] || [ "$NAME" = "folia" ]; then
+  if [ ! -f "eula.txt" ]; then
+    echo
+    echo "The EULA (https://aka.ms/MinecraftEULA) must be accepted to run the server."
+    read -p "Do you accept the EULA? (y/n): " ACCEPT_EULA
+    if [[ "$ACCEPT_EULA" =~ ^[Yy]$ ]]; then
+      echo "eula=true" > eula.txt
+      echo "EULA accepted."
+    else
+      echo "EULA not accepted. Exiting."
+      exit 1
+    fi
+  fi
+fi
+
 # Run jar
 echo "Running ${PROJECT} with ${MEMORY} RAM..."
 java -Xmx${MEMORY} -Xms${MEMORY} ${JVM_FLAGS} -jar "${PROJECT}.jar" ${JAR_FLAGS}

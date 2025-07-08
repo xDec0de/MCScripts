@@ -90,6 +90,22 @@ if (-not (Test-Path $jarFile)) {
     }
 }
 
+# EULA check (only for paper and folia)
+if ($NAME -eq "paper" -or $NAME -eq "folia") {
+    if (-not (Test-Path ".\eula.txt")) {
+        Write-Host ""
+        Write-Host "The EULA (https://aka.ms/MinecraftEULA) must be accepted to run the server."
+        $response = Read-Host "Do you accept the EULA? (y/n)"
+        if ($response -match '^[Yy]$') {
+            "eula=true" | Out-File -Encoding ASCII -FilePath ".\eula.txt"
+            Write-Host "EULA accepted."
+        } else {
+            Write-Host "EULA not accepted. Exiting."
+            exit 1
+        }
+    }
+}
+
 # Split JVM_FLAGS and JAR_FLAGS into arrays if not empty
 $jvmFlagsArray = @()
 if ($JVM_FLAGS) {
