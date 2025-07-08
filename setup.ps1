@@ -91,7 +91,7 @@ if (-not (Test-Path $jarFile)) {
 }
 
 # EULA check (only for paper and folia)
-if ($NAME -eq "paper" -or $NAME -eq "folia") {
+if ($PROJECT -eq "paper" -or $PROJECT -eq "folia") {
     if (-not (Test-Path ".\eula.txt")) {
         Write-Host ""
         Write-Host "The EULA (https://aka.ms/MinecraftEULA) must be accepted to run the server."

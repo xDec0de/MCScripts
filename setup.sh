@@ -46,7 +46,7 @@ if [ ! -f "${PROJECT}.jar" ]; then
 fi
 
 # EULA check (only for paper and folia)
-if [ "$NAME" = "paper" ] || [ "$NAME" = "folia" ]; then
+if [ "$PROJECT" = "paper" ] || [ "$PROJECT" = "folia" ]; then
   if [ ! -f "eula.txt" ]; then
     echo
     echo "The EULA (https://aka.ms/MinecraftEULA) must be accepted to run the server."
