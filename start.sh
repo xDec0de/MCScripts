@@ -9,6 +9,33 @@ echo "                                                        |_|             "
 echo 
 
 # --------------------------------------------------------------------------- #
+#                             Dependency check
+# --------------------------------------------------------------------------- #
+
+echo "Checking dependencies..."
+
+if ! command -v java --version >/dev/null 2>&1; then
+  echo 
+  echo "java is not installed. Please install java and try again."
+  echo 
+  exit 1
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+  echo 
+  echo "jq is not installed. Please install jq and try again."
+  echo 
+  exit 1
+fi
+
+if ! command -v curl >/dev/null 2>&1; then
+  echo 
+  echo "curl is not installed. Please install curl and try again."
+  echo 
+  exit 1
+fi
+
+# --------------------------------------------------------------------------- #
 #                              Configuration
 # --------------------------------------------------------------------------- #
 
@@ -98,40 +125,78 @@ EOF
 fi
 
 # --------------------------------------------------------------------------- #
-#                             Setup execution
+#                             Jar download
 # --------------------------------------------------------------------------- #
 
-# Execute remote setup.sh script
-SETUP_URL="https://raw.githubusercontent.com/xDec0de/MCScripts/refs/heads/main/setup.sh"
+set -a
+source $CONFIG_FILE
+set +a
 
-echo "======================================================================"
-echo "Downloading and executing setup.sh..."
-echo "======================================================================"
-
-if ! command -v java --version >/dev/null 2>&1; then
-  echo ""
-  echo "java is not installed. Please install java and try again."
-  echo ""
+if [ -z "$PROJECT" ]; then
+  echo "PROJECT not found on $CONFIG_FILE"
   exit 1
 fi
 
-if ! command -v jq >/dev/null 2>&1; then
-  echo ""
-  echo "jq is not installed. Please install jq and try again."
-  echo ""
-  exit 1
-fi
+if [ ! -f "${PROJECT}.jar" ]; then
 
-if command -v curl >/dev/null 2>&1; then
-  curl -fsSL "$SETUP_URL" | bash || {
-    echo ""
-    echo "Failed to download or execute setup.sh from $SETUP_URL"
-	echo ""
+  if [ -z "$VERSION" ]; then
+    VERSION="latest"
+  fi
+
+  USER_AGENT="csk-downloader/1.0"
+
+  if [ "$VERSION" = "latest" ]; then
+    VER=$(curl -s -H "User-Agent: $USER_AGENT" https://fill.papermc.io/v3/projects/${PROJECT} | \
+    jq -r '.versions | to_entries[0] | .value[0]')
+  else
+    VER=$VERSION
+  fi
+
+  # First check if the version exists
+  VERSION_CHECK=$(curl -s -H "User-Agent: $USER_AGENT" https://fill.papermc.io/v3/projects/${PROJECT}/versions/${VER}/builds)
+
+  # Check if the API returned an error
+  if echo "$VERSION_CHECK" | jq -e '.ok == false' > /dev/null 2>&1; then
+    ERROR_MSG=$(echo "$VERSION_CHECK" | jq -r '.message // "Unknown error"')
+    echo "Error: $ERROR_MSG"
     exit 1
-  }
-else
-  echo ""
-  echo "curl is not installed. Please install curl and try again."
-  echo ""
-  exit 1
+  fi
+
+  # Get the download URL directly, or null if no stable build exists
+  PAPERMC_URL=$(curl -s -H "User-Agent: $USER_AGENT" https://fill.papermc.io/v3/projects/${PROJECT}/versions/${VER}/builds | \
+  jq -r 'first(.[] | select(.channel == "STABLE") | .downloads."server:default".url) // "null"')
+
+  if [ "$PAPERMC_URL" != "null" ]; then
+    curl -o ${PROJECT}.jar $PAPERMC_URL
+  else
+    echo "No stable build for version $VER found"
+  fi
 fi
+
+# --------------------------------------------------------------------------- #
+#                               EULA check
+# --------------------------------------------------------------------------- #
+
+
+# EULA check (only for paper and folia)
+if [ "$PROJECT" = "paper" ] || [ "$PROJECT" = "folia" ]; then
+  if [ ! -f "eula.txt" ]; then
+    echo
+    echo "The EULA (https://aka.ms/MinecraftEULA) must be accepted to run the server."
+    read -p "Do you accept the EULA? (y/n): " ACCEPT_EULA
+    if [[ "$ACCEPT_EULA" =~ ^[Yy]$ ]]; then
+      echo "eula=true" > eula.txt
+      echo "EULA accepted."
+    else
+      echo "EULA not accepted. Exiting."
+      exit 1
+    fi
+  fi
+fi
+
+# --------------------------------------------------------------------------- #
+#                             Jar execution
+# --------------------------------------------------------------------------- #
+
+echo "Running ${PROJECT} with ${MEMORY} RAM..."
+java -Xmx${MEMORY} -Xms${MEMORY} ${JVM_FLAGS} -jar "${PROJECT}.jar" ${JAR_FLAGS}
