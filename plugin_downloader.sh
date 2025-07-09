@@ -61,12 +61,13 @@ process_spigot_link() {
     return
   fi
 
-  download_plugin "$SPIGET_URL/$id/download" "spigot"
+  download_plugin "$SPIGET_URL/$id/download" "$id" "spigot"
 }
 
 download_plugin() {
   local url="$1"
-  local source="$2"
+  local filename="$2"
+  local source="$3"
   
   echo "Dowloading $source plugin from $url"
 
