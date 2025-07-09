@@ -64,6 +64,10 @@ process_spigot_link() {
   download_plugin "$SPIGET_URL/$id/download" "$id" "spigot"
 }
 
+# --------------------------------------------------------------------------- #
+#                      Generic plugin download function
+# --------------------------------------------------------------------------- #
+
 download_plugin() {
   local url="$1"
   local filename="$2"
@@ -89,13 +93,13 @@ while IFS= read -r line || [ -n "$line" ]; do
   # Remove trailing "\r" to support CL RF format (File saved on Windows)
   line=$(echo "$line" | tr -d '\r')
 
-  # Ignore any empty lines, just in case.
-  if [[ -z "$line" ]]; then
+  # Ignore any empty lines and comments
+  if [[ -z "$line" || "$line" =~ ^# ]]; then
     continue
   fi
 
   # Check link type and call its function
-  if [[ "$line" == https://www.spigotmc.org/* ]]; then
+  if [[ "$line" == ${SPIGOT_URL}* ]]; then
     process_spigot_link "$line"
   else
     echo "Invalid link (not Spigot): $line"
