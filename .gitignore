@@ -1,5 +1,8 @@
 # Generated config
 mcsconfig.env
 
+# Plugin download file
+mcsplugins
+
 # Downloaded jar files
 *.jar
