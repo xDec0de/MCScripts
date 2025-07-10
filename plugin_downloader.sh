@@ -72,13 +72,55 @@ download_plugin() {
   local url="$1"
   local filename="$2"
   local source="$3"
+  local path="${PLUGINS_FOLDER}/${filename}.jar"
   
   echo "Dowloading $source plugin from $url"
 
   # Download the file to destination folder with the filename
-  curl -L -J -s -o "${PLUGINS_FOLDER}/${filename}.jar" --create-dirs "$url"
+  curl -L -J -s -o "$path" --create-dirs "$url"
+  
+  final_name=$(get_pluginyml_info "$path" "plugin.yml")
+  
+  if [[ ! "$final_name" == "" ]]; then
+    mv "$path" "${PLUGINS_FOLDER}/${final_name}.jar"
+	path="${PLUGINS_FOLDER}/${final_name}.jar"
+  fi
 
-  echo "- Downloaded at: ${PLUGINS_FOLDER}/${filename}.jar"
+  echo "- Downloaded at: $path"
+}
+
+# --------------------------------------------------------------------------- #
+#              Plugin YAML parser (Obtain plugin name & version)
+# --------------------------------------------------------------------------- #
+
+get_pluginyml_info() {
+  local jar_path="$1"
+  local ymlpath="$2"
+  local fallback="$(basename "$jar_path" .jar)"
+
+  tmpdir=$(mktemp -d)
+
+  if [[ -n "$ymlpath" ]]; then
+    unzip -qq -d "$tmpdir" "$jar_path" "$ymlpath" 2>/dev/null
+
+    if [[ -f "$tmpdir/$ymlpath" ]]; then
+      plugin_yml=$(< "$tmpdir/$ymlpath")
+
+      name=$(echo "$plugin_yml"    | grep -E '^name:'    | sed -E 's/name:[[:space:]]*//')
+      version=$(echo "$plugin_yml" | grep -E '^version:' | sed -E 's/version:[[:space:]]*//;s/"//g')
+
+      [[ -z "$name"    ]] && name="$fallback"
+      [[ -z "$version" ]] && version="latest"
+	  
+	  # Remove trailing "\r" to support CL RF format (File saved on Windows)
+	  name=$(echo "$name" | tr -d '\r')
+	  version=$(echo "$version" | tr -d '\r')
+
+      echo "${name}-${version}"
+    fi
+  fi
+
+  rm -rf "$tmpdir"
 }
 
 # --------------------------------------------------------------------------- #
